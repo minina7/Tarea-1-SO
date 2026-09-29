@@ -1,0 +1,2 @@
+1 : prender_carbon : :
+2 : asar : 300 : 1
