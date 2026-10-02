@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <unordered_set>
 using namespace std;
 
 string trim (const string& texto){
@@ -30,6 +31,7 @@ bool leer_plan (const string& nombre_archivo){
     }
 
     string linea;
+    unordered_set<string> ids_vistos;
 
     while (getline (archivo, linea)){
 
@@ -61,10 +63,27 @@ bool leer_plan (const string& nombre_archivo){
            if (campos.size() != 4){
 
             cerr << "Formato ingresado invalido: " << linea << endl;
-            
+
             return false;
         }
 
+        string id = campos [0];
+
+        if (id.empty()){
+
+            cerr << "ID se encuentra vacio" << endl;
+
+            return false;
+        }
+
+        if (ids_vistos.find (id) != ids_vistos.end ()){
+
+            cerr << "ID se duplicado: " << id <<  endl;
+
+            return false;
+        }
+
+        ids_vistos.insert(id);
         
         for (size_t i = 0; i < campos.size(); i++){
 
