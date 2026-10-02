@@ -5,6 +5,8 @@
 #include <sstream>
 #include <vector>
 #include <unordered_set>
+#include <cstdlib>
+#include <cerrno>
 using namespace std;
 
 string trim (const string& texto){
@@ -60,7 +62,7 @@ bool leer_plan (const string& nombre_archivo){
             campos[i] = trim (campos[i]);
         }
 
-           if (campos.size() != 4){
+        if (campos.size() != 4){
 
             cerr << "Formato ingresado invalido: " << linea << endl;
 
@@ -78,10 +80,66 @@ bool leer_plan (const string& nombre_archivo){
 
         if (ids_vistos.find (id) != ids_vistos.end ()){
 
-            cerr << "ID se duplicado: " << id <<  endl;
+            cerr << "ID duplicado: " << id <<  endl;
 
             return false;
         }
+
+        string nombre = campos[1];
+
+        if (nombre.empty()){
+
+            cerr << "Nombre se encuentra vacio" << endl;
+
+            return false;
+        }
+
+        string tiempo_texto = campos[2];
+        long tiempo;
+
+        if (tiempo_texto.empty()){
+
+            tiempo = rand() % 4901 + 100;
+
+        }else{
+
+            char* fin_tiempo;
+            errno = 0;
+
+            long valor = strtol (tiempo_texto.c_str(), &fin_tiempo, 10);
+
+            if (errno == ERANGE){
+
+                cerr << "Tiempo fuera de rango" << endl;
+
+                return false;
+            }
+
+            if (fin_tiempo == tiempo_texto.c_str()){
+
+                cerr << "Tiempo invalido" << endl;
+
+                return false;
+            }
+
+            if (*fin_tiempo != '\0'){
+
+                cerr << "Tiempo invalido" << endl;
+
+                return false;
+            }
+
+            if (valor <= 0){
+
+                cerr << "El tiempo debe ser mayor que cero" << endl;
+
+                return false;
+            }
+
+            tiempo = valor;
+        }
+
+        cout << "Tiempo final: " << tiempo << endl;
 
         ids_vistos.insert(id);
         
