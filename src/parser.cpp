@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include <cstdlib>
 #include <cerrno>
+#include <cctype>
 using namespace std;
  
 string trim (const string& texto){
@@ -37,7 +38,14 @@ bool leer_plan (const string& nombre_archivo,
     string linea;
     unordered_set<string> ids_vistos;
 
+    
+
     while (getline (archivo, linea)){
+
+        if (!linea.empty() && linea.back() == '\r'){
+
+            linea.pop_back();
+        }
 
         if (trim(linea).empty()){
             
@@ -54,7 +62,9 @@ bool leer_plan (const string& nombre_archivo,
 
         }
 
-        if (!linea.empty() && linea.back() == ':'){
+        string linea_limpia = trim (linea);
+
+        if (!linea_limpia.empty() && linea_limpia.back() == ':'){
 
             campos.push_back("");
         }
@@ -78,6 +88,16 @@ bool leer_plan (const string& nombre_archivo,
             cerr << "ID se encuentra vacio" << endl;
 
             return false;
+        }
+
+        for (char c : id){
+
+            if (!isalnum (static_cast <unsigned char> (c))){
+
+                cerr << "ID invalido: " << id << endl;
+
+                return false;
+            }
         }
 
         if (ids_vistos.find (id) != ids_vistos.end ()){
@@ -169,11 +189,6 @@ bool leer_plan (const string& nombre_archivo,
             }
         }
 
-        for (size_t i = 0; i < dependencias.size(); i++){
-
-            cout << "Dependencia " << i << ": [" << dependencias[i] << "]" << endl;
-        }
-        cout << "Tiempo final: " << tiempo << endl;
 
         ids_vistos.insert(id);
 
@@ -185,12 +200,6 @@ bool leer_plan (const string& nombre_archivo,
         actividad.dependencias = dependencias;
 
         actividades.push_back (actividad);
-        
-        for (size_t i = 0; i < campos.size(); i++){
-
-        cout << "Campo " << i << ": [" << campos[i] << "]" << endl;
-        
-        }
 
 
     }
