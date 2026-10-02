@@ -3,7 +3,9 @@
 #include <cstdlib>
 #include <ctime>
 #include <cerrno>
+#include <vector>
 #include "parser.h"
+#include "dag.h"
 using namespace std;
 
 
@@ -51,6 +53,30 @@ int main (int argc, char* argv[]){
     if (!leer_plan(nombre_archivo, actividades)){
 
         return 1;
+    }
+
+    vector<NodoDAG> dag;
+
+    if (!construir_dag(actividades, dag)){
+
+        return 1;
+    }
+
+    for (size_t i = 0; i < dag.size(); i++){
+
+        cout << "actividad " << actividades[i].id
+        << " grado entrada: " << dag[i].grado_entrada << endl;
+
+        cout << "Dependientes: ";
+
+        for (size_t j = 0; j < dag[i].dependientes.size(); j++){
+
+            size_t indice_dependiente = dag[i].dependientes[j];
+
+            cout << actividades[indice_dependiente].id << " ";
+        }
+
+        cout << endl;
     }
 
     cout << "actividades cargadas: " << actividades.size() << endl;
