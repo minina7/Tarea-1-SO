@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <cerrno>
+#include "parser.h"
 using namespace std;
 
 
@@ -37,16 +38,23 @@ int main (int argc, char* argv[]){
         return 1;
     }
 
+     srand (time(nullptr));
+     
     if ( k <= 0){
 
         cerr << "Ingrese un numero valido." << endl;
         return 1;
     }
 
-    srand (time(nullptr));
+
+    if (!leer_plan(nombre_archivo)){
+
+        return 1;
+    }
+
 
     cout << "Archivo: " << nombre_archivo << endl;
     cout << "K: " << k << endl;
-    
+
     return 0;
 }
