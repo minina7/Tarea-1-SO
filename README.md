@@ -73,7 +73,12 @@ Deteccion de ciclos en desarrollo
 
 ### Procesos y control de concurrencia
 
-pendiente
+- Cada actividad se ejecuta utilizando un proceso creado con `fork()`.
+- El proceso hijo simula el tiempo de ejecucion de la actividad.
+- El proceso padre utiliza `waitpid()` para esperar la finalizacion de procesos.
+- Se respeta el limite de concurrencia indicado por `K`.
+- Cuando se libera un cupo, se puede iniciar otra activadad que ya tenga sus dependencias cumplidas.
+- No se utiliza busy-waiting.
 
 ### Pipes
 
@@ -89,6 +94,9 @@ pendiente
 - Se utiliza `unordered_map` para relacionar rapidamente cada ID con su indice dentro del vector.
 - Cada nodo del DAG guarda su grado de entrada y una lista de actividades dependientes.
 - Para la deteccion de ciclos se utiliza el algoritmo de Kahn.
+- Se utiliza `waitpid()` de forma bloqueante para esperar procesos y evitar busy-waiting.
+- Se mantiene un contador de procesos activos para no superar el limite `K`.
+- Las actividades listas se almacenan en una cola.
 
 ## Pruebas
 
@@ -108,8 +116,6 @@ Actualmente se han realizado pruebas para:
 
 Todavia falta implementar:
 
-- creacion de procesos
-- limite de concurrencia `K`
 - comunicacion mediante pipes
 - manejo de fallas
 - manejo de `SIGINT`

@@ -4,8 +4,12 @@
 #include <ctime>
 #include <cerrno>
 #include <vector>
+#include <queue>
+#include <unordered_map>
+#include <sys/wait.h>
 #include "parser.h"
 #include "dag.h"
+#include "procesos.h"
 using namespace std;
 
 
@@ -69,25 +73,75 @@ int main (int argc, char* argv[]){
         return 1;
     }
 
+    vector<size_t> grados_actuales(dag.size());
+    queue<size_t> listas;
+
     for (size_t i = 0; i < dag.size(); i++){
 
-        cout << "actividad " << actividades[i].id
-        << " grado entrada: " << dag[i].grado_entrada << endl;
+        grados_actuales[i] = dag[i].grado_entrada;
 
-        cout << "Dependientes: ";
+        if (grados_actuales[i] == 0){
 
-        for (size_t j = 0; j < dag[i].dependientes.size(); j++){
-
-            size_t indice_dependiente = dag[i].dependientes[j];
-
-            cout << actividades[indice_dependiente].id << " ";
+            listas.push(i);
         }
+    }
 
-        cout << endl;
+    unordered_map<pid_t, size_t> actividad_por_pid;
+    size_t procesos_activos = 0;
+
+    size_t terminadas = 0;
+
+    while (terminadas < actividades.size()){
+
+        while (!listas.empty() && procesos_activos < static_cast<size_t>(k)){
+
+            size_t indice = listas.front();
+            listas.pop();
+
+            pid_t pid = iniciar_actividad(actividades[indice]);
+
+                if (pid < 0){
+
+                    return 1;
+            }
+
+        actividad_por_pid[pid] = indice;
+        procesos_activos++;
+    }
+
+    int estado;
+    pid_t pid_terminado = waitpid(-1, &estado, 0);
+
+    if (pid_terminado < 0){
+
+        cerr << "Error esperando un proceso" << endl;
+
+        return 1;
+    }
+
+    size_t indice_terminado = actividad_por_pid[pid_terminado];
+
+    actividad_por_pid.erase(pid_terminado);
+    procesos_activos--;
+    terminadas++;
+
+    if (WIFEXITED(estado) && WEXITSTATUS(estado) == 0){
+
+        for (size_t i = 0; i < dag[indice_terminado].dependientes.size(); i++){
+
+            size_t dependiente = dag[indice_terminado].dependientes[i];
+
+            grados_actuales[dependiente]--;
+
+                if (grados_actuales[dependiente] == 0){
+
+                    listas.push(dependiente);
+                }
+            }
+        }
     }
 
     cout << "actividades cargadas: " << actividades.size() << endl;
-
     cout << "Archivo: " << nombre_archivo << endl;
     cout << "K: " << k << endl;
 
