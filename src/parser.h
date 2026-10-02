@@ -12,6 +12,8 @@ struct Actividad{
 };
 
 
-bool leer_plan (const std::string& nombre_archivo);
+bool leer_plan (const std::string& nombre_archivo,
+
+    std::vector<Actividad>& actividades);
 
 #endif

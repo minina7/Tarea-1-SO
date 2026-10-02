@@ -22,7 +22,9 @@ string trim (const string& texto){
     return texto.substr (inicio, fin - inicio + 1);
 }
 
-bool leer_plan (const string& nombre_archivo){
+bool leer_plan (const string& nombre_archivo,
+
+    vector<Actividad>& actividades){
 
     ifstream archivo (nombre_archivo);
 
@@ -34,7 +36,6 @@ bool leer_plan (const string& nombre_archivo){
 
     string linea;
     unordered_set<string> ids_vistos;
-    vector<Actividad> actividades;
 
     while (getline (archivo, linea)){
 

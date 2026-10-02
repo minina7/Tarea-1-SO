@@ -38,8 +38,6 @@ int main (int argc, char* argv[]){
         return 1;
     }
 
-     srand (time(nullptr));
-     
     if ( k <= 0){
 
         cerr << "Ingrese un numero valido." << endl;
@@ -47,14 +45,19 @@ int main (int argc, char* argv[]){
     }
 
 
-    if (!leer_plan(nombre_archivo)){
+    srand (time(nullptr));
+    vector<Actividad> actividades;
+
+    if (!leer_plan(nombre_archivo, actividades)){
 
         return 1;
     }
 
+    cout << "actividades cargadas: " << actividades.size() << endl;
 
     cout << "Archivo: " << nombre_archivo << endl;
     cout << "K: " << k << endl;
 
     return 0;
+    
 }
