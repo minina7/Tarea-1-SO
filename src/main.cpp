@@ -43,6 +43,10 @@ int main (int argc, char* argv[]){
         return 1;
     }
 
+    srand (time(nullptr));
 
+    cout << "Archivo: " << nombre_archivo << endl;
+    cout << "K: " << k << endl;
+    
     return 0;
 }
