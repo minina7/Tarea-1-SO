@@ -8,7 +8,7 @@
 #include <cstdlib>
 #include <cerrno>
 using namespace std;
-
+ 
 string trim (const string& texto){
 
     size_t inicio = texto.find_first_not_of (" \t");
@@ -34,6 +34,7 @@ bool leer_plan (const string& nombre_archivo){
 
     string linea;
     unordered_set<string> ids_vistos;
+    vector<Actividad> actividades;
 
     while (getline (archivo, linea)){
 
@@ -174,6 +175,15 @@ bool leer_plan (const string& nombre_archivo){
         cout << "Tiempo final: " << tiempo << endl;
 
         ids_vistos.insert(id);
+
+        Actividad actividad;
+
+        actividad.id = id;
+        actividad.nombre = nombre;
+        actividad.tiempo = tiempo;
+        actividad.dependencias = dependencias;
+
+        actividades.push_back (actividad);
         
         for (size_t i = 0; i < campos.size(); i++){
 
@@ -185,5 +195,19 @@ bool leer_plan (const string& nombre_archivo){
     }
 
 
+    for (size_t i = 0; i < actividades.size(); i++){
+
+        for (size_t j = 0; j < actividades[i].dependencias.size(); j++){
+
+            string dep = actividades[i].dependencias[j];
+
+            if (ids_vistos.find(dep) == ids_vistos.end()){
+
+                cerr << "Dependencia inexistente: " << dep << endl;
+
+                return false;
+            }
+        }
+    }
     return true;
 }
