@@ -139,6 +139,38 @@ bool leer_plan (const string& nombre_archivo){
             tiempo = valor;
         }
 
+        vector<string> dependencias;
+
+        if (!campos[3].empty()){
+
+            stringstream ss_deps(campos[3]);
+            string dependencia;
+
+            while (getline(ss_deps, dependencia, ',')){
+
+                dependencia = trim(dependencia);
+
+                if (!dependencia.empty()){
+
+                    dependencias.push_back(dependencia);
+                }
+            }
+        }
+
+        for (size_t i = 0; i < dependencias.size(); i++){
+
+            if (dependencias[i] == id){
+
+                cerr << "Una actividad no puede depender de si misma " << id << endl;
+
+                return false;
+            }
+        }
+
+        for (size_t i = 0; i < dependencias.size(); i++){
+
+            cout << "Dependencia " << i << ": [" << dependencias[i] << "]" << endl;
+        }
         cout << "Tiempo final: " << tiempo << endl;
 
         ids_vistos.insert(id);
