@@ -62,6 +62,13 @@ int main (int argc, char* argv[]){
         return 1;
     }
 
+    if (tiene_ciclo(dag)){
+
+        cerr << "El plan contiene un ciclo" << endl;
+
+        return 1;
+    }
+
     for (size_t i = 0; i < dag.size(); i++){
 
         cout << "actividad " << actividades[i].id

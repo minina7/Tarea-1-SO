@@ -1,6 +1,7 @@
 #include "dag.h"
 #include <unordered_map>
 #include <string>
+#include <queue>
 using namespace std;
 
 bool construir_dag (const vector<Actividad>& actividades,
@@ -35,4 +36,46 @@ bool construir_dag (const vector<Actividad>& actividades,
 
     return true;
 
+}
+
+bool tiene_ciclo(const vector<NodoDAG>& dag){
+
+    vector<size_t> grados;
+    queue<size_t> cola;
+
+    grados.resize(dag.size());
+
+    for (size_t i = 0; i < dag.size(); i++){
+
+        grados[i] = dag [i].grado_entrada;
+
+        if (grados[i] == 0){
+
+            cola.push(i);
+        }
+    }
+    
+    size_t procesados = 0;
+    while (!cola.empty()){
+
+    size_t actual = cola.front();
+    cola.pop();
+
+    procesados++;
+
+    for (size_t i = 0; i < dag[actual].dependientes.size(); i++){
+
+        size_t dependiente = dag[actual].dependientes[i];
+
+        grados[dependiente]--;
+
+        if (grados[dependiente] == 0){
+
+            cola.push(dependiente);
+        }
+    }
+}
+    
+
+    return procesados != dag.size();
 }

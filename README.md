@@ -60,11 +60,13 @@ Si el tiempo de una actividad viene vacio, el programa le asigna un tiempo aleat
 
 ### DAG 
 
-Por ahora se encuentra implementada la construccion basica del grafo
+Se encuentra implementada la construccion del grafo y la deteccion de ciclos
 
 - Se relaciona cada ID con su posicion dentro del vector actividades.
 - Se calcula el grado de entrada de cada actividad.
 - Se guarda que actividades dependen de cada nodo.
+- Se detectan ciclos utilizando el algoritmo de Kahn.
+- Si el plan contiene un ciclo, el programa termina indicando error.
 
 Deteccion de ciclos en desarrollo
 
@@ -86,7 +88,7 @@ pendiente
 - El parser se encuentra separado de la construccion del DAG para mantener las funciones del programa mas ordenadas.
 - Se utiliza `unordered_map` para relacionar rapidamente cada ID con su indice dentro del vector.
 - Cada nodo del DAG guarda su grado de entrada y una lista de actividades dependientes.
-- Para la deteccion de ciclos se utilizara el algoritmo de Kahn.
+- Para la deteccion de ciclos se utiliza el algoritmo de Kahn.
 
 ## Pruebas
 
@@ -100,12 +102,12 @@ Actualmente se han realizado pruebas para:
 - dependencias inexistentes
 - actividades sin tiempo definido
 - auto-dependencias
+- planes con ciclos
 
 ## Limitaciones
 
 Todavia falta implementar:
 
-- deteccion de ciclos
 - creacion de procesos
 - limite de concurrencia `K`
 - comunicacion mediante pipes

@@ -13,4 +13,5 @@ bool construir_dag(const std::vector<Actividad>& actividades,
 
     std::vector<NodoDAG>& dag);
 
+bool tiene_ciclo(const std::vector<NodoDAG>& dag);
 #endif
