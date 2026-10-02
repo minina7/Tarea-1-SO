@@ -33,6 +33,11 @@ bool leer_plan (const string& nombre_archivo){
 
     while (getline (archivo, linea)){
 
+        if (trim(linea).empty()){
+            
+            continue;
+        }
+
         stringstream ss (linea);
         string campo;
         vector <string> campos;
@@ -42,7 +47,6 @@ bool leer_plan (const string& nombre_archivo){
             campos.push_back (campo);
 
         }
-
 
         if (!linea.empty() && linea.back() == ':'){
 
@@ -54,6 +58,14 @@ bool leer_plan (const string& nombre_archivo){
             campos[i] = trim (campos[i]);
         }
 
+           if (campos.size() != 4){
+
+            cerr << "Formato ingresado invalido: " << linea << endl;
+            
+            return false;
+        }
+
+        
         for (size_t i = 0; i < campos.size(); i++){
 
         cout << "Campo " << i << ": [" << campos[i] << "]" << endl;
