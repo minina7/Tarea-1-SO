@@ -1,2 +1,1 @@
-1 : prender_carbon : :
-2 : asar : 300 : 1
+5 : armar_choripan : : 3, 4
