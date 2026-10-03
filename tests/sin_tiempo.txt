@@ -1,1 +1,2 @@
-5 : armar_choripan : : 3, 4
+1 : tarea1 : :
+2 : tarea2 : : 1
