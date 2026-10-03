@@ -82,7 +82,10 @@ Deteccion de ciclos en desarrollo
 
 ### Pipes
 
-pendiente
+- Cada proceso hijo utiliza un pipe para comunicar su finalizacion.
+- Al terminar una actividad se envia un mensaje con el ID de la actividad.
+- El proceso padre recibe el mensaje y luego actualiza las dependencias correspondientes.
+- Los descriptores de los pipes se cierran despues de ser utilizados.
 
 ### Manejo de fallas y señales
 
@@ -116,7 +119,6 @@ Actualmente se han realizado pruebas para:
 
 Todavia falta implementar:
 
-- comunicacion mediante pipes
 - manejo de fallas
 - manejo de `SIGINT`
 - pruebas de estres

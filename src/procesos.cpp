@@ -1,22 +1,38 @@
 #include "procesos.h"
 #include <iostream>
 #include <unistd.h>
-#include <sys/types.h>
+#include <cstdio>
+#include <cstring>
 using namespace std;
 
-pid_t iniciar_actividad(const Actividad& actividad){
+pid_t iniciar_actividad(const Actividad& actividad, int& fd_lectura){
 
-    pid_t pid = fork();
+    int canal[2];
 
-    if (pid < 0){
+    if (pipe(canal) == -1){
 
-        cerr << "Error al crear proceso para la actividad "
+        cerr << "Error creando pipe para actividad "
              << actividad.id << endl;
 
         return -1;
     }
 
+    pid_t pid = fork();
+
+    if (pid < 0){
+
+        cerr << "Error al crear proceso para actividad "
+             << actividad.id << endl;
+
+        close(canal[0]);
+        close(canal[1]);
+
+        return -1;
+    }
+
     if (pid == 0){
+
+        close(canal[0]);
 
         cout << "Iniciando actividad " << actividad.id
              << ": " << actividad.nombre << endl;
@@ -26,8 +42,21 @@ pid_t iniciar_actividad(const Actividad& actividad){
         cout << "Finalizando actividad " << actividad.id
              << ": " << actividad.nombre << endl;
 
+        char mensaje[128];
+
+        snprintf(mensaje, sizeof(mensaje),
+                 "FIN:%s", actividad.id.c_str());
+
+        write(canal[1], mensaje, strlen(mensaje));
+
+        close(canal[1]);
+
         _exit(0);
     }
+
+    close(canal[1]);
+
+    fd_lectura = canal[0];
 
     return pid;
 }

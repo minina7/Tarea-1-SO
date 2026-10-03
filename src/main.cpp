@@ -7,6 +7,7 @@
 #include <queue>
 #include <unordered_map>
 #include <sys/wait.h>
+#include <unistd.h>
 #include "parser.h"
 #include "dag.h"
 #include "procesos.h"
@@ -87,8 +88,9 @@ int main (int argc, char* argv[]){
     }
 
     unordered_map<pid_t, size_t> actividad_por_pid;
-    size_t procesos_activos = 0;
+    unordered_map<pid_t, int> pipe_por_pid;
 
+    size_t procesos_activos = 0;
     size_t terminadas = 0;
 
     while (terminadas < actividades.size()){
@@ -98,40 +100,61 @@ int main (int argc, char* argv[]){
             size_t indice = listas.front();
             listas.pop();
 
-            pid_t pid = iniciar_actividad(actividades[indice]);
+            int fd_lectura;
 
-                if (pid < 0){
+            pid_t pid = iniciar_actividad(actividades[indice], fd_lectura);
 
-                    return 1;
+            if (pid < 0){
+
+                return 1;
             }
 
-        actividad_por_pid[pid] = indice;
-        procesos_activos++;
-    }
+            actividad_por_pid[pid] = indice;
+            pipe_por_pid[pid] = fd_lectura;
 
-    int estado;
-    pid_t pid_terminado = waitpid(-1, &estado, 0);
+            procesos_activos++;
+        }
 
-    if (pid_terminado < 0){
+        int estado;
+        pid_t pid_terminado = waitpid(-1, &estado, 0);
 
-        cerr << "Error esperando un proceso" << endl;
+        if (pid_terminado < 0){
 
-        return 1;
-    }
+            cerr << "Error esperando un proceso" << endl;
 
-    size_t indice_terminado = actividad_por_pid[pid_terminado];
+            return 1;
+        }
 
-    actividad_por_pid.erase(pid_terminado);
-    procesos_activos--;
-    terminadas++;
+        size_t indice_terminado = actividad_por_pid[pid_terminado];
 
-    if (WIFEXITED(estado) && WEXITSTATUS(estado) == 0){
+        int fd_lectura = pipe_por_pid[pid_terminado];
 
-        for (size_t i = 0; i < dag[indice_terminado].dependientes.size(); i++){
+        char mensaje[128];
 
-            size_t dependiente = dag[indice_terminado].dependientes[i];
+        ssize_t leidos = read(fd_lectura, mensaje, sizeof(mensaje) - 1);
 
-            grados_actuales[dependiente]--;
+        if (leidos > 0){
+
+            mensaje[leidos] = '\0';
+
+            cout << "Mensaje recibido: " << mensaje << endl;
+        }
+
+        close(fd_lectura);
+
+        actividad_por_pid.erase(pid_terminado);
+        pipe_por_pid.erase(pid_terminado);
+
+        procesos_activos--;
+        terminadas++;
+
+        if (WIFEXITED(estado) && WEXITSTATUS(estado) == 0){
+
+            for (size_t i = 0; i < dag[indice_terminado].dependientes.size(); i++){
+
+                size_t dependiente = dag[indice_terminado].dependientes[i];
+
+                grados_actuales[dependiente]--;
 
                 if (grados_actuales[dependiente] == 0){
 
@@ -146,5 +169,4 @@ int main (int argc, char* argv[]){
     cout << "K: " << k << endl;
 
     return 0;
-    
 }

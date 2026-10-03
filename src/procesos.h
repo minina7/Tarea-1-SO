@@ -3,6 +3,6 @@
 #include "parser.h"
 #include <sys/types.h>
 
-pid_t iniciar_actividad(const Actividad& actividad);
+pid_t iniciar_actividad(const Actividad& actividad, int& fd_lectura);
 
 #endif
