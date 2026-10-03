@@ -89,10 +89,9 @@ Deteccion de ciclos en desarrollo
 
 ### Manejo de fallas y señales
 
-- Si una actividad falla, el programa no termina completamente.
-- Las actividades que dependen de la actividad fallida se marcan como abortadas.
+- Si una actividad falla, se abortan solamente las actividades que dependen de ella.
 - Las ramas independientes pueden continuar ejecutandose.
-- El manejo de `SIGINT` todavia se encuentra pendiente.
+- Se maneja `SIGINT` para abortar todas las actividades activas al presionar Ctrl+C.
 
 ## Decisiones de diseño
 
@@ -122,5 +121,4 @@ Actualmente se han realizado pruebas para:
 
 Todavia falta implementar:
 
-- manejo de `SIGINT`
 - pruebas de estres

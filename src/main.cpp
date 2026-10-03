@@ -8,11 +8,19 @@
 #include <unordered_map>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <csignal>
 #include "parser.h"
 #include "dag.h"
 #include "procesos.h"
 
 using namespace std;
+
+volatile sig_atomic_t interrupcion = 0;
+
+void manejar_sigint(int){
+
+    interrupcion = 1;
+}
 
 void abortar_rama(size_t indice,
                   const vector<NodoDAG>& dag,
@@ -49,6 +57,14 @@ int main (int argc, char* argv[]){
         
         return 1;
     }
+
+    struct sigaction sa;
+
+    sa.sa_handler = manejar_sigint;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+
+    sigaction(SIGINT, &sa, nullptr);
 
     string nombre_archivo = argv[1]; 
     char* fin;
@@ -129,8 +145,31 @@ int main (int argc, char* argv[]){
 
     while (terminadas < actividades.size()){
 
+        if (interrupcion){
+
+            cerr << "\nSIGINT recibido. Abortando actividades..." << endl;
+
+            for (auto& par : actividad_por_pid){
+
+                kill(par.first, SIGTERM);
+            }
+
+            for (auto& par : actividad_por_pid){
+
+                waitpid(par.first, nullptr, 0);
+            }
+
+            for (auto& par : pipe_por_pid){
+
+                close(par.second);
+            }
+
+            return 1;
+        }
+
         while (!listas.empty() &&
-               procesos_activos < static_cast<size_t>(k)){
+               procesos_activos < static_cast<size_t>(k) &&
+               !interrupcion){
 
             size_t indice = listas.front();
             listas.pop();
@@ -155,6 +194,28 @@ int main (int argc, char* argv[]){
         pid_t pid_terminado = waitpid(-1, &estado, 0);
 
         if (pid_terminado < 0){
+
+            if (errno == EINTR && interrupcion){
+
+                cerr << "\nSIGINT recibido. Abortando actividades..." << endl;
+
+                for (auto& par : actividad_por_pid){
+
+                    kill(par.first, SIGTERM);
+                }
+
+                for (auto& par : actividad_por_pid){
+
+                    waitpid(par.first, nullptr, 0);
+                }
+
+                for (auto& par : pipe_por_pid){
+
+                    close(par.second);
+                }
+
+                return 1;
+            }
 
             cerr << "Error esperando un proceso" << endl;
 

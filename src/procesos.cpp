@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <cstdio>
 #include <cstring>
+#include <csignal>
 using namespace std;
 
 pid_t iniciar_actividad(const Actividad& actividad, int& fd_lectura){
@@ -31,6 +32,8 @@ pid_t iniciar_actividad(const Actividad& actividad, int& fd_lectura){
     }
 
     if (pid == 0){
+
+        signal(SIGINT, SIG_IGN);
 
         close(canal[0]);
 
