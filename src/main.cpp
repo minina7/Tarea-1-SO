@@ -11,14 +11,42 @@
 #include "parser.h"
 #include "dag.h"
 #include "procesos.h"
+
 using namespace std;
 
+void abortar_rama(size_t indice,
+                  const vector<NodoDAG>& dag,
+                  const vector<Actividad>& actividades,
+                  vector<bool>& abortadas,
+                  size_t& terminadas){
+
+    for (size_t i = 0; i < dag[indice].dependientes.size(); i++){
+
+        size_t dependiente = dag[indice].dependientes[i];
+
+        if (!abortadas[dependiente]){
+
+            abortadas[dependiente] = true;
+            terminadas++;
+
+            cerr << "Actividad " << actividades[dependiente].id
+                 << " abortada por dependencia fallida" << endl;
+
+            abortar_rama(dependiente,
+                         dag,
+                         actividades,
+                         abortadas,
+                         terminadas);
+        }
+    }
+}
 
 int main (int argc, char* argv[]){
 
     if (argc != 3){
 
         cerr << "Ingresar formato correcto:\nEjemplo: ./planificador plan.txt K" << endl;
+        
         return 1;
     }
 
@@ -30,29 +58,33 @@ int main (int argc, char* argv[]){
     if (errno == ERANGE){
 
         cerr << "Numero fuera de rango" << endl;
+
         return 1;
     }
 
     if (fin == argv[2]){
 
         cerr << "Numero invalido" << endl;
+
         return 1;
     }
 
     if (*fin != '\0'){
         
         cerr << "Numero invalido" << endl;
+
         return 1;
     }
 
-    if ( k <= 0){
+    if (k <= 0){
 
         cerr << "Ingrese un numero valido." << endl;
+
         return 1;
     }
 
-
     srand (time(nullptr));
+
     vector<Actividad> actividades;
 
     if (!leer_plan(nombre_archivo, actividades)){
@@ -93,9 +125,12 @@ int main (int argc, char* argv[]){
     size_t procesos_activos = 0;
     size_t terminadas = 0;
 
+    vector<bool> abortadas(actividades.size(), false);
+
     while (terminadas < actividades.size()){
 
-        while (!listas.empty() && procesos_activos < static_cast<size_t>(k)){
+        while (!listas.empty() &&
+               procesos_activos < static_cast<size_t>(k)){
 
             size_t indice = listas.front();
             listas.pop();
@@ -116,6 +151,7 @@ int main (int argc, char* argv[]){
         }
 
         int estado;
+
         pid_t pid_terminado = waitpid(-1, &estado, 0);
 
         if (pid_terminado < 0){
@@ -125,19 +161,23 @@ int main (int argc, char* argv[]){
             return 1;
         }
 
-        size_t indice_terminado = actividad_por_pid[pid_terminado];
+        size_t indice_terminado =
+            actividad_por_pid[pid_terminado];
 
-        int fd_lectura = pipe_por_pid[pid_terminado];
+        int fd_lectura =
+            pipe_por_pid[pid_terminado];
 
         char mensaje[128];
 
-        ssize_t leidos = read(fd_lectura, mensaje, sizeof(mensaje) - 1);
+        ssize_t leidos =
+            read(fd_lectura, mensaje, sizeof(mensaje) - 1);
 
         if (leidos > 0){
 
             mensaje[leidos] = '\0';
 
-            cout << "Mensaje recibido: " << mensaje << endl;
+            cout << "Mensaje recibido: "
+                 << mensaje << endl;
         }
 
         close(fd_lectura);
@@ -148,24 +188,43 @@ int main (int argc, char* argv[]){
         procesos_activos--;
         terminadas++;
 
-        if (WIFEXITED(estado) && WEXITSTATUS(estado) == 0){
+        if (WIFEXITED(estado) &&
+            WEXITSTATUS(estado) == 0){
 
-            for (size_t i = 0; i < dag[indice_terminado].dependientes.size(); i++){
+            for (size_t i = 0;
+                 i < dag[indice_terminado].dependientes.size();
+                 i++){
 
-                size_t dependiente = dag[indice_terminado].dependientes[i];
+                size_t dependiente =
+                    dag[indice_terminado].dependientes[i];
 
                 grados_actuales[dependiente]--;
 
-                if (grados_actuales[dependiente] == 0){
+                if (grados_actuales[dependiente] == 0 &&
+                    !abortadas[dependiente]){
 
                     listas.push(dependiente);
                 }
             }
+
+        }else{
+
+            cerr << "Fallo la actividad "
+                 << actividades[indice_terminado].id
+                 << endl;
+
+            abortar_rama(indice_terminado,
+                         dag,
+                         actividades,
+                         abortadas,
+                         terminadas);
         }
     }
 
     cout << "actividades cargadas: " << actividades.size() << endl;
+
     cout << "Archivo: " << nombre_archivo << endl;
+
     cout << "K: " << k << endl;
 
     return 0;

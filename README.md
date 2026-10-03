@@ -89,7 +89,10 @@ Deteccion de ciclos en desarrollo
 
 ### Manejo de fallas y señales
 
-pendiente
+- Si una actividad falla, el programa no termina completamente.
+- Las actividades que dependen de la actividad fallida se marcan como abortadas.
+- Las ramas independientes pueden continuar ejecutandose.
+- El manejo de `SIGINT` todavia se encuentra pendiente.
 
 ## Decisiones de diseño
 
@@ -119,6 +122,5 @@ Actualmente se han realizado pruebas para:
 
 Todavia falta implementar:
 
-- manejo de fallas
 - manejo de `SIGINT`
 - pruebas de estres
